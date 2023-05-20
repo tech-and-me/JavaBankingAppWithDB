@@ -1,24 +1,23 @@
-package com.wileyedge.bankaccount;
+package com.wileyedge.model.bankaccount;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
-import com.wileyedge.customer.Customer;
-import com.wileyedge.customer.Customers;
 import com.wileyedge.exceptions.InsufficientBalanceException;
+import com.wileyedge.model.customer.CustomerModel;
+
 
 public abstract class BankAccount implements Serializable{
 	private long accntNum;
 	private long bsbCode;
 	private String bankName;
 	private double accntBal;
-	private String accntOpeningDate;
+	private LocalDate accntOpeningDate;
 	
-	public BankAccount() {
-		
+	public BankAccount() {		
 	}
 	
-	public BankAccount(long accntNum, long bsbCode, String accntName, double accntBal, String accntOpeningDate) {
-		super();
+	public BankAccount(long accntNum, long bsbCode, String accntName, double accntBal, LocalDate accntOpeningDate) {
 		this.accntNum = accntNum;
 		this.bsbCode = bsbCode;
 		this.bankName = accntName;
@@ -58,11 +57,11 @@ public abstract class BankAccount implements Serializable{
 		this.accntBal = accntBal;
 	}
 
-	public String getAccntOpeningDate() {
+	public LocalDate getAccntOpeningDate() {
 		return accntOpeningDate;
 	}
 
-	public void setAccntOpeningDate(String accntOpeningDate) {
+	public void setAccntOpeningDate(LocalDate accntOpeningDate) {
 		this.accntOpeningDate = accntOpeningDate;
 	}
 	
@@ -76,8 +75,8 @@ public abstract class BankAccount implements Serializable{
 
 	@Override
 	public String toString() {
-		return "BankAccount [accntNum=" + accntNum + ", bsbCode=" + bsbCode + ", bankName=" + bankName + ", accntBal="
-				+ accntBal + ", accntOpeningDate=" + accntOpeningDate + "]";
+		return "accntNum=" + accntNum + ", bsbCode=" + bsbCode + ", bankName=" + bankName + ", accntBal="
+				+ accntBal + ", accntOpeningDate=" + accntOpeningDate;
 	}
 	
 	

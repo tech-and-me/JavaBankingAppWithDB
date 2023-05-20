@@ -1,37 +1,34 @@
 package com.wileyedge.utilities;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import com.wileyedge.exceptions.InvalidAgeRangeException;
+import com.wileyedge.exceptions.InvalidPhoneNumberException;
+import com.wileyedge.exceptions.OutOfRangeInputException;
+
 public class InputUtilities {
 	private static Scanner scanner = new Scanner(System.in);
+	
 
-	public static int getInputAsInteger(String prompt, int min, int max) {
+	public static int getInputAsInteger(String varName, String prompt) {
 	    int input = 0;
 	    boolean validInput = false;
-
+	    
 	    do {
 	        try {
 	            System.out.println(prompt);
 	            input = scanner.nextInt();
 	            scanner.nextLine();
-
-	            if (input < min || input > max) {
-	                System.out.printf("Input must be between %d and %d%n", min, max);
-	                continue;
-	            }
-	            validInput = true;
-
 	        } catch (InputMismatchException e) {
-	            System.out.println("Input must be an integer.");
+	            System.out.println(varName +  " must be an integer.");
 	            scanner.nextLine(); // consume invalid input
-	        } catch (Exception e) {
-	            System.out.println("Oops! Something went wrong.");
+	        }catch (Exception e) {
+	            System.out.println("Oops! Something went wrong. ");
+	            return -1;
 	        }
 
 	    } while (!validInput);
@@ -39,7 +36,7 @@ public class InputUtilities {
 	    return input;
 	}
 	
-	public static double getInputAsDouble(String prompt, double min, double max) {
+	public static double getInputAsDouble(String varName, String prompt) {
 	    boolean validInput = false;
 	    double input = 0;
 
@@ -48,26 +45,19 @@ public class InputUtilities {
 	            System.out.println(prompt);
 	            input = scanner.nextDouble();
 	            scanner.nextLine();
-
-	            if (input < min || input > max) {
-	                System.out.printf("Input must be between %.2f and %.2f%n", min, max);
-	                continue;
-	            }
-
 	            validInput = true;
 	        } catch (InputMismatchException e) {
-	            System.out.println("Input must be a valid double - try again.");
+	            System.out.println(varName + " must be a valid double ");
 	            scanner.nextLine();
-	        }
+	        } catch (Exception e) {
+				System.out.println("Oooop! Something went wrong !");
+			}
 	    } while (!validInput);
 
 	    return input;
 	}
 
-
-	
-	
-	public static long getInputAsLong(String prompt, long min, long max) {
+	public static long getInputAsLong(String varName, String prompt) {
 	    boolean validInput = false;
 	    long input = 0;
 	    
@@ -76,15 +66,9 @@ public class InputUtilities {
 	            System.out.println(prompt);
 	            input = scanner.nextLong();
 	            scanner.nextLine();
-
-	            if (input < min || input > max) {
-	            	System.out.printf("Input must be between %d and %d%n", min, max);
-	                continue;
-	            }
-
 	            validInput = true;
 	        } catch (InputMismatchException e) {
-	            System.out.println("Input must be a valid integer - try again.");
+	            System.out.println(varName + " must be a valid integer");
 	            scanner.nextLine();
 	        } 
 	    } while (!validInput);
@@ -92,62 +76,78 @@ public class InputUtilities {
 	    return input;
 	}
 	
-	public static String getInputAsString(String prompt, int minLength, int maxLength) {
+	public static String getInputAsString(String varName, String prompt) {
 	    boolean validInput = false;
-	    String input = null;
+	    String input = "";
 
 	    do {
 	        try {
 	            System.out.println(prompt);
 	            input = scanner.nextLine();
-
-	            if (input.length() < minLength || input.length() > maxLength) {
-	                System.out.printf("Input must be between %d and %d characters long.%n", minLength, maxLength);
-	                continue;
-	            }
-
 	            validInput = true;
-	        } catch (Exception e) {
-	            System.out.println("Ooops! Something went wrong. Please try again.");
+	        } 
+	        catch (Exception e) {
+	            System.out.println("Ooops! Something went wrong. ");
 	            System.out.println(e.getMessage());
-	            e.printStackTrace();
 	        }
 	    } while (!validInput);
 
 	    return input;
 	}
 	
-	public static String getInputAsDate(String prompt, LocalDate minDate, LocalDate maxDate) {
-	    boolean validInput = false;
-	    String input = null;
+	public static LocalDate getInputAsDate(String varName, String prompt) {
+        boolean validInput = false;
+        LocalDate date = null;
 
-	    do {
-	        try {
-	            System.out.println(prompt);
-	            input = scanner.nextLine();
+        do {
+            try {
+                System.out.println(prompt);
+                String input = scanner.nextLine();
 
-	            // Parse the input string into a LocalDate object
-	            LocalDate date = LocalDate.parse(input, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                // Parse the input string into a LocalDate object
+                date = LocalDate.parse(input, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                validInput = true;
+            } catch (DateTimeParseException e) {
+                System.out.println(varName + " must be a valid date in the format dd/MM/yyyy. try again");
+            } catch (Exception e) {
+                System.out.println("Oops! Something went wrong. try again ");
+            }
+        } while (!validInput);
 
-	            // Check that the date is between today and 80 years ago
-	            if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-	                System.out.println("Input must be a date between " + minDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) +
-	                        " and " + maxDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-	                continue;
-	            }
-
-	            validInput = true;
-	        } catch (DateTimeParseException e) {
-	            System.out.println("Input must be a valid date in the format DD/MM/YYYY - try again.");
-	        } catch (Exception e) {
-	            System.out.println("Oops! Something went wrong.");
-	            e.printStackTrace();
+        return date;
+    }	
+	
+	public static String getInputAsPhoneNumber(String prompt){
+		String phoneNumber = "";
+        boolean isValidInput = false;
+		
+		do {
+			try {
+	        	System.out.println(prompt);
+	        	 phoneNumber = scanner.nextLine();
+	        	 
+	        	 if(!isValidPhoneNumber(phoneNumber)) {
+	        		 throw new InvalidPhoneNumberException("Invalid phone number format. Please enter a 10-digit number starting with '0'.");
+	        	 }
+	        	 isValidInput = true;
+	        	 
+	        } catch (InvalidPhoneNumberException e) {
+	            System.out.println(e.getMessage());
 	        }
-	    } while (!validInput);
+	    
+		}while(!isValidInput);
+        return phoneNumber;
+    }
 
-	    // Return the date as a string in the desired format
-	    return input;
-	}
+
+	private static boolean isValidPhoneNumber(String phoneNumber) {
+        return phoneNumber.matches("0\\d{9}");
+    }
+
+
+
+
+
 
 
 }

@@ -1,4 +1,7 @@
-package com.wileyedge.bankaccount;
+package com.wileyedge.model.bankaccount;
+
+import java.time.LocalDate;
+
 public class FixedDepositAccount extends BankAccount {
 	private int tenure;
 	private double interestEarned;
@@ -10,9 +13,10 @@ public class FixedDepositAccount extends BankAccount {
 		super(b.getAccntNum(), b.getBsbCode(), b.getBankName(), b.getAccntBal(), b.getAccntOpeningDate());
 	}
 	
-	public FixedDepositAccount(long accntNum, long bsbCode, String accntName, double accntBal, String accntOpeningDate) {
+	public FixedDepositAccount(long accntNum, long bsbCode, String accntName, double accntBal, LocalDate accntOpeningDate,double depositAmount,int tenure) {
 	    super(accntNum, bsbCode, accntName, accntBal, accntOpeningDate);
 	    this.tenure = tenure;
+	    this.depositAmount = depositAmount;
 	    this.interestEarned = 0.0;
 	}
 	

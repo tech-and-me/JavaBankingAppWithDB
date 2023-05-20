@@ -1,4 +1,6 @@
-package com.wileyedge.bankaccount;
+package com.wileyedge.model.bankaccount;
+
+import java.time.LocalDate;
 
 import com.wileyedge.exceptions.InsufficientBalanceException;
 
@@ -8,8 +10,16 @@ public class SavingAccount extends BankAccount {
 	private double interestEarned;
 	public static final double INTEREST_RATE = 0.04;
 	
-	public SavingAccount(long accntNum, long bsbCode, String accntName, double accntBal, String accntOpeningDate) {
+	public SavingAccount(long accntNum, long bsbCode, String accntName, double accntBal, LocalDate accntOpeningDate, boolean isSalaryAccount) {
 	    super(accntNum, bsbCode, accntName, accntBal, accntOpeningDate);
+	    this.isSalaryAccount = isSalaryAccount;
+	    this.interestEarned = 0.0;
+	}
+	
+	public SavingAccount(long accntNum, long bsbCode, String accntName, double accntBal, LocalDate accntOpeningDate, boolean isSalaryAccount,float minBalance) {
+	    super(accntNum, bsbCode, accntName, accntBal, accntOpeningDate);
+	    this.isSalaryAccount = isSalaryAccount;
+	    this.minBalance = minBalance;
 	    this.interestEarned = 0.0;
 	}
 	
