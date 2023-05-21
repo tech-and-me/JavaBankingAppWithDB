@@ -29,7 +29,7 @@ public interface ICustomerService {
 	int retrieveLastCustomerIdFromDatabase();
 	Map<Integer, CustomerModel> retrieveAllCustomersFromDatabase();
 	void updateAllCustomersToDatabase(Map<Integer, CustomerModel> customers);
-	void updateLastCustomerIdToDatabase(int lastCustomerId);
+//	void updateLastCustomerIdToDatabase(int lastCustomerId);
 	
 	
 }

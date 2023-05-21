@@ -30,12 +30,22 @@ public class Controller {
 		
 		// Retrieve the lastCustId value from the database and assign it to the lastCustId variable
 		int retrievedLastCustId = customerService.retrieveLastCustomerIdFromDatabase();
-		if(retrievedLastCustId > CustomerModel.getLastCustId()) {
-			CustomerModel.setLastCustId(retrievedLastCustId);
+		
+		// Find the maximum ID from the current data  
+		//(Cos sometime when data lost due to error in SQL, the lastCustID record in database is not correct.
+		//hence, double check it with this method. )
+		int maxId = 0;
+		for (CustomerModel customer : customers.values()) {
+		    if (customer.getCustId() > maxId) {
+		        maxId = customer.getCustId();
+		    }
 		}
 		
+		// Update lastCustId with the maximum value between retrievedLastCustId, current lastCustId, and maxId
+		int newLastCustId = Math.max(Math.max(CustomerModel.getLastCustId(), retrievedLastCustId), maxId+1);
+		CustomerModel.setLastCustId(newLastCustId);
+		
 		// Display main menu
-
 		boolean readyToExit = false;
 		Scanner scanner = new Scanner(System.in);
 		while(!readyToExit) {

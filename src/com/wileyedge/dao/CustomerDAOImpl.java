@@ -89,6 +89,7 @@ public class CustomerDAOImpl implements ICustomerDAO {
 			Statement truncateStatement = con.createStatement();
 			truncateStatement.addBatch("TRUNCATE TABLE Customer");
 			truncateStatement.addBatch("TRUNCATE TABLE BankAccount");
+			truncateStatement.addBatch("TRUNCATE TABLE customeridtracker");
 			truncateStatement.executeBatch();
 
 			String customerSql = "INSERT INTO Customer (id, name, phone, Passport, dob) VALUES (?, ?, ?, ?, ?)";
@@ -115,12 +116,12 @@ public class CustomerDAOImpl implements ICustomerDAO {
 					bankAccountPstat.setString(6, bankAccount.getBankAccountType());
 
 					if (bankAccount instanceof SavingAccount) {
-						SavingAccount savingAccount = (SavingAccount) bankAccount;
+						SavingAccount savingAccount = (SavingAccount)bankAccount;
 						bankAccountPstat.setBoolean(7, savingAccount.isSalaryAccount());
 						bankAccountPstat.setNull(8, Types.DOUBLE); // deposit for fixed deposit accnt only
 						bankAccountPstat.setNull(9, Types.INTEGER);// tenure for fixed deposit accnt only
 					} else if (bankAccount instanceof FixedDepositAccount) {
-						FixedDepositAccount fixedDepositAccount = (FixedDepositAccount) bankAccount;
+						FixedDepositAccount fixedDepositAccount = (FixedDepositAccount)bankAccount;
 						bankAccountPstat.setNull(7, Types.BOOLEAN);
 						bankAccountPstat.setDouble(8, fixedDepositAccount.getDepositAmount());
 						bankAccountPstat.setInt(9, fixedDepositAccount.getTenure());
@@ -129,29 +130,10 @@ public class CustomerDAOImpl implements ICustomerDAO {
 					bankAccountPstat.executeUpdate();
 				}
 			}
-
-			
-			 PreparedStatement checkExistingRecordsPstat = con.prepareStatement("SELECT COUNT(*) FROM customer.customeridtracker");
-		        ResultSet resultSet = checkExistingRecordsPstat.executeQuery();
-		        resultSet.next();
-		        int rowCount = resultSet.getInt(1);
-
-		        if (rowCount > 0) {
-		            // Existing records found, perform an update
-		            PreparedStatement updateLastCustIdPstat = con.prepareStatement("UPDATE customer.customeridtracker SET LAST_CUST_ID = ?");
-		            updateLastCustIdPstat.setInt(1, CustomerModel.getLastCustId());
-		            updateLastCustIdPstat.executeUpdate();
-		        } else {
-		            // No existing records found, perform an insert
-		            PreparedStatement insertLastCustIdPstat = con.prepareStatement("INSERT INTO customer.customeridtracker (LAST_CUST_ID) VALUES (?)");
-		            insertLastCustIdPstat.setInt(1, CustomerModel.getLastCustId());
-		            insertLastCustIdPstat.executeUpdate();
-		        }
-
-			
-			
-			
-			
+			//Updating the last customer id to database
+			PreparedStatement insertLastCustIdPstat = con.prepareStatement("INSERT INTO customer.customeridtracker (LAST_CUST_ID) VALUES (?)");
+			insertLastCustIdPstat.setInt(1, CustomerModel.getLastCustId());
+			insertLastCustIdPstat.executeUpdate();
 
 			System.out.println("All customer data and bank account records sent to the database.");
 		} catch (SQLException e) {
@@ -160,39 +142,6 @@ public class CustomerDAOImpl implements ICustomerDAO {
 
 		closeConnection(con);	
 	}
-	
-	@Override
-	public void updateLastCustomerIdToDatabase(int lastCustomerId) {
-	    Connection con = openConnection();
-
-	    try {
-	        PreparedStatement checkExistingRecordsPstat = con.prepareStatement("SELECT COUNT(*) FROM customer.customeridtracker");
-	        ResultSet resultSet = checkExistingRecordsPstat.executeQuery();
-	        resultSet.next();
-	        int rowCount = resultSet.getInt(1);
-
-	        if (rowCount > 0) {
-	            // Existing records found, perform an update
-	            PreparedStatement updateLastCustIdPstat = con.prepareStatement("UPDATE customer.customeridtracker SET LAST_CUST_ID = ?");
-	            updateLastCustIdPstat.setInt(1, CustomerModel.getLastCustId());
-	            updateLastCustIdPstat.executeUpdate();
-	        } else {
-	            // No existing records found, perform an insert
-	            PreparedStatement insertLastCustIdPstat = con.prepareStatement("INSERT INTO customer.customeridtracker (LAST_CUST_ID) VALUES (?)");
-	            insertLastCustIdPstat.setInt(1, CustomerModel.getLastCustId());
-	            insertLastCustIdPstat.executeUpdate();
-	        }
-	        
-	        System.out.println("updated last id of " + lastCustomerId + " successfully.");
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    closeConnection(con);
-	}
-	
-	
-	
 	
 
 	@Override
@@ -288,12 +237,6 @@ public class CustomerDAOImpl implements ICustomerDAO {
 		closeConnection(con);
 		return retrieved_last_cust_id;
 	}
-
-
-
-
-	
-	
 	
 	
 	

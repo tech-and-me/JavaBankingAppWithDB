@@ -14,6 +14,6 @@ public interface ICustomerDAO {
 	void update(CustomerModel stu);
 	int retrieveLastCustomerIdFromDatabase();
 	void delete(int id);
-	void updateLastCustomerIdToDatabase(int lastCustomerId);
+//	void updateLastCustomerIdToDatabase(int lastCustomerId);
 
 }

@@ -362,23 +362,28 @@ public class CustomerService implements ICustomerService, Serializable {
     		}
 
     		// Get amount to withdraw
-    		String promptGetAmount = "Enter Amount to withdrawal : ";
+    		String promptGetAmount = "Enter Amount to withdraw : ";
     		varName = "Amount";
     		double minAmount = 5.00;
-    		double maxAmount = 0;
-    		double amount = 0.00;	
+    		double amount = 0;
     		String tryAgain = "";
-    		while(amount < minAmount) {
-    			amount = InputUtilities.getInputAsDouble(varName,promptGetAmount); 
-    			System.out.println("Withdrwal amount must be, at least, " + minAmount + "\nWould you like to try another amount ? Y/N : ");
-    			tryAgain = new Scanner(System.in).nextLine();
-    			if(!tryAgain.equalsIgnoreCase("Y")) {
-    				break;
-    			}
-    		}
+			boolean validInput = false;
+			do{
+				tryAgain = "";
+				amount = InputUtilities.getInputAsDouble(varName,promptGetAmount);
+				if(amount < minAmount){
+					System.out.println("Withdrawal amount must be, at least, " + minAmount + "\nWould you like to try another amount ? Y/N : ");
+					tryAgain = new Scanner(System.in).nextLine();
+					if(!tryAgain.equalsIgnoreCase("Y")) {
+						break;
+					}
+				}else{
+					validInput = true;
+				}
+			}while(!validInput);
 
     		//Check type of bank account (Fixed Deposit or Saving)
-    		BankAccount account = customer.getBankAccount(); // this will return fixed or saving account
+    		BankAccount account = customer.getBankAccount(); // this will return fixed "F" or saving account "S"
     		double updatedBankBal = account.withdraw(amount); // invoke method in fixed or saving account
 
     	}catch(InvalidCustomerIdException e) {
@@ -511,7 +516,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	}
 
 	
-	//// DATABSE	
+	//// DATABASE
 	
 	@Override
 	public int retrieveLastCustomerIdFromDatabase() {
@@ -528,9 +533,9 @@ public class CustomerService implements ICustomerService, Serializable {
 		 return(dao.retrieveAllCustomersFromDatabase());
 	}
 	
-	@Override
-	public void updateLastCustomerIdToDatabase(int lastCustomerId){
-		dao.updateLastCustomerIdToDatabase(lastCustomerId);
-	}
+//	@Override
+//	public void updateLastCustomerIdToDatabase(int lastCustomerId){
+//		dao.updateLastCustomerIdToDatabase(lastCustomerId);
+//	}
 
 }
