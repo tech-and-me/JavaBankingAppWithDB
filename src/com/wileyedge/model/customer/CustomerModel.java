@@ -126,7 +126,7 @@ public class CustomerModel implements Serializable {
 	@Override
 	public String toString() {
 		return "custId=" + custId + ", custName=" + custName + ", custAge=" + custAge + ", custMobNum="
-				+ custMobNum + " , bankAccount=" + bankAccount;
+				+ custMobNum + " , bankAccount [ " + bankAccount + " ]";
 				
 	}
 

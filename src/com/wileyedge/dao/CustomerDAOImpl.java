@@ -117,11 +117,11 @@ public class CustomerDAOImpl implements ICustomerDAO {
 					if (bankAccount instanceof SavingAccount) {
 						SavingAccount savingAccount = (SavingAccount) bankAccount;
 						bankAccountPstat.setBoolean(7, savingAccount.isSalaryAccount());
-						bankAccountPstat.setNull(8, Types.INTEGER);
-						bankAccountPstat.setNull(9, Types.DOUBLE);
+						bankAccountPstat.setNull(8, Types.DOUBLE); // deposit for fixed deposit accnt only
+						bankAccountPstat.setNull(9, Types.INTEGER);// tenure for fixed deposit accnt only
 					} else if (bankAccount instanceof FixedDepositAccount) {
 						FixedDepositAccount fixedDepositAccount = (FixedDepositAccount) bankAccount;
-						bankAccountPstat.setBoolean(7, false);
+						bankAccountPstat.setNull(7, Types.BOOLEAN);
 						bankAccountPstat.setDouble(8, fixedDepositAccount.getDepositAmount());
 						bankAccountPstat.setInt(9, fixedDepositAccount.getTenure());
 					}
@@ -226,17 +226,17 @@ public class CustomerDAOImpl implements ICustomerDAO {
 		            LocalDate accntOpeningDate = rs.getDate("accntOpeningDate").toLocalDate();
 		            String bankAccountType = rs.getString("bankAccountType");
 
-		            if (bankAccountType.equalsIgnoreCase("Saving Account")) {
+		            if (bankAccountType.equalsIgnoreCase("S")) {
 	                    boolean isSalaryAccount = rs.getBoolean("isSalaryAccount");
 	                    
 	                    float minBalance = isSalaryAccount ? 0 : 100;
 	                    bankAccount = new SavingAccount(accntNum, bsbCode, bankName, accntBal, accntOpeningDate, isSalaryAccount, minBalance);
-	                    bankAccount.setBankAccountType("Saving Account");
-	                } else if (bankAccountType.equalsIgnoreCase("Fixed Deposit Account")) {
+	                    bankAccount.setBankAccountType("S");
+	                } else if (bankAccountType.equalsIgnoreCase("F")) {
 	                    int tenure = rs.getInt("tenure");
 	                    double depositAmount = rs.getDouble("depositAmount");
 	                    bankAccount = new FixedDepositAccount(accntNum, bsbCode, bankName, accntBal, accntOpeningDate, depositAmount, tenure);
-	                    bankAccount.setBankAccountType("Fixed Deposit Account");
+	                    bankAccount.setBankAccountType("F");
 	                }
 	            }
 	            

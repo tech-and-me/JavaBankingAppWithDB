@@ -237,15 +237,21 @@ public class CustomerService implements ICustomerService, Serializable {
         }
 
     	//Get type of bank account
-    	String promptGetAccountType = "Is this a fixed deposit account or saving account ? Type F for fixed or S for Saving : ";
-    	int minChar = 1;
-    	int maxChar = 1;
+        String promptGetAccountType = "Is this a fixed deposit account or saving account ? Type F for fixed or S for Saving : ";
     	varName = "Type of Account";
-    	String accountType = InputUtilities.getInputAsString(varName, promptGetAccountType);
-    	 	
+    	String accountType = "";
+    	validInput = false;
+        while(!validInput) {
+        	accountType = InputUtilities.getInputAsString(varName, promptGetAccountType);
+        	accountType = accountType.toUpperCase();
+        	if(accountType.equals("F") || accountType.equals("S")){
+        		validInput = true;
+        		break;
+        	}
+        	System.out.println("Invalid account type. Please try again.");
+        }
     	//Invoke method to create bank account
     	this.assignBankAccountForCustomer(customer,accountNum,bsb,bankName,bankBal,openingDate,accountType);
-	    	
 	}
 	
 	@Override
@@ -276,7 +282,6 @@ public class CustomerService implements ICustomerService, Serializable {
 	    	String varName = "Deposit";
 	    	try {
 	    		  if (accntType.equalsIgnoreCase("F")) {   	      
-	    			  accntType = "Fixed Deposit Account";
 	    			  String promptGetDepositAmount = "Enter deposit amount : ";
 	    			  double minAccBal = 1000.00;
 	    			  double maxAccBal = 0;
@@ -298,8 +303,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	    				  throw new OutOfRangeInputException("Tenure must be between " + minTenure + " and " + maxTenure + " years. ");
 	    			  }
 	    		  } else{
-	    			  accntType = "Saving Account";
-	    			  String promptIsSalaryAccount = "Is this salary account ? Y/N : ";
+	    			  String promptIsSalaryAccount = "Is this salary account ? Y for yes or any other keys for No : ";
 	    			  int minChar = 1;
 	    			  int maxChar = 1;
 	    			  isLooping = true;
