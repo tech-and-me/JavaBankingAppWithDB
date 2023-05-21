@@ -18,7 +18,7 @@ public class FixedDepositAccount extends BankAccount {
 	    this.tenure = tenure;
 	    this.depositAmount = depositAmount;
 	    this.interestEarned = 0.0;
-	}
+	}	
 	
 	public int getTenure() {
 		return tenure;

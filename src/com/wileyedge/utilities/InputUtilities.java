@@ -23,6 +23,7 @@ public class InputUtilities {
 	            System.out.println(prompt);
 	            input = scanner.nextInt();
 	            scanner.nextLine();
+	            validInput = true;
 	        } catch (InputMismatchException e) {
 	            System.out.println(varName +  " must be an integer.");
 	            scanner.nextLine(); // consume invalid input

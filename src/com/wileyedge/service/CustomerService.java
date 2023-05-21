@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import com.wileyedge.dao.CustomerDAOImpl;
+import com.wileyedge.dao.ICustomerDAO;
 import com.wileyedge.exceptions.CustomerAlreadyHasBankAccountLinkedException;
 import com.wileyedge.exceptions.InsufficientBalanceException;
 import com.wileyedge.exceptions.InvalidAgeRangeException;
@@ -33,10 +35,32 @@ import com.wileyedge.utilities.InputUtilities;
 
 
 public class CustomerService implements ICustomerService, Serializable {
-	private Map<Integer,CustomerModel> customerMap; //temporary storage
+	private Map<Integer,CustomerModel> customers; //temporary storage
+	private ICustomerDAO dao;
 	
-	public CustomerService(Map<Integer, CustomerModel> customerMap) {
-		this.customerMap = customerMap;
+	
+	public CustomerService(Map<Integer, CustomerModel> customers) {
+		this.customers = customers; // to be used for any transaction with temporary local storage
+		dao = new CustomerDAOImpl(); // to be used for any transaction with database
+	}
+
+
+	public Map<Integer, CustomerModel> getCustomers() {
+		return customers;
+	}
+
+
+	public void setCustomers(Map<Integer, CustomerModel> customers) {
+		this.customers = customers;
+	}
+
+
+	public ICustomerDAO getDao() {
+		return dao;
+	}
+
+	public void setDao(ICustomerDAO dao) {
+		this.dao = dao;
 	}
 
 	@Override
@@ -46,7 +70,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	
 	@Override
 	public void addCustomerToList(CustomerModel customer) {
-		customerMap.put(customer.getCustId(),customer);
+		this.customers.put(customer.getCustId(),customer);
 		System.out.println("Below customer details has been added to the customer list successfully.");
 		System.out.println(customer);
 	}
@@ -251,39 +275,42 @@ public class CustomerService implements ICustomerService, Serializable {
 	    	boolean isLooping = false;
 	    	String varName = "Deposit";
 	    	try {
-	    		  if (accntType.equalsIgnoreCase("F")) {   	            
-	    	            String promptGetDepositAmount = "Enter deposit amount : ";
-	    	        	double minAccBal = 1000.00;
-	    	        	double maxAccBal = 0;
-	    	        	double depositAmount = InputUtilities.getInputAsDouble(varName,promptGetDepositAmount);
-	    	        	if(depositAmount < minAccBal) {
-	    	        		throw new InsufficientBalanceException("Deposit amount cannot be less than $" + minAccBal);
-	    	        	}
-	    	        	
-	    	        	String promptGetTenure= "Enter tenure (in years)  :";
-	    	        	int minTenure = 1;
-	    	        	int maxTenure = 7;
-	    	        	varName = "Tenure (in years)";
-	    	        	int tenure = InputUtilities.getInputAsInteger(varName,promptGetTenure);
-	    	        	if(tenure >=1 && tenure <=7) {
-	    	        		//create bank account
-		    	        	bankAccount = new FixedDepositAccount(accntNum, bsbCode, accntName, accntBal, accntOpeningDate,depositAmount,tenure); 
-	    	        	}else {
-	    	        		throw new OutOfRangeInputException("Tenure must be between " + minTenure + " and " + maxTenure + " years. ");
-	    	        	}
-	    		  } else{	        	
-	    	        	String promptIsSalaryAccount = "Is this salary account ? Y/N : ";
-	    	        	int minChar = 1;
-	    	        	int maxChar = 1;
-	    	        	isLooping = true;
-	    	        	varName = "Option";
-	    	        	
-	    	        	String isSalaryAccountStr = InputUtilities.getInputAsString(varName,promptIsSalaryAccount);
-	    	        	float minBalNonSalAccnt = 100;
-	    	        	
-	    	        	if (isSalaryAccountStr.equalsIgnoreCase("Y")) {  	        
-	    	        		bankAccount = new SavingAccount(accntNum, bsbCode, accntName, accntBal, accntOpeningDate, true); 
-	    	            } else {    	            	
+	    		  if (accntType.equalsIgnoreCase("F")) {   	      
+	    			  accntType = "Fixed Deposit Account";
+	    			  String promptGetDepositAmount = "Enter deposit amount : ";
+	    			  double minAccBal = 1000.00;
+	    			  double maxAccBal = 0;
+	    			  double depositAmount = InputUtilities.getInputAsDouble(varName,promptGetDepositAmount);
+	    			  if(depositAmount < minAccBal) {
+	    				  throw new InsufficientBalanceException("Deposit amount cannot be less than $" + minAccBal);
+	    			  }
+
+	    			  String promptGetTenure= "Enter tenure (in years)  :";
+	    			  int minTenure = 1;
+	    			  int maxTenure = 7;
+	    			  varName = "Tenure (in years)";
+	    			  int tenure = InputUtilities.getInputAsInteger(varName,promptGetTenure);
+	    			  if(tenure >=1 && tenure <=7) {
+	    				  //create bank account
+	    				  bankAccount = new FixedDepositAccount(accntNum, bsbCode, accntName, accntBal, accntOpeningDate,depositAmount,tenure);
+
+	    			  }else {
+	    				  throw new OutOfRangeInputException("Tenure must be between " + minTenure + " and " + maxTenure + " years. ");
+	    			  }
+	    		  } else{
+	    			  accntType = "Saving Account";
+	    			  String promptIsSalaryAccount = "Is this salary account ? Y/N : ";
+	    			  int minChar = 1;
+	    			  int maxChar = 1;
+	    			  isLooping = true;
+	    			  varName = "Option";
+
+	    			  String isSalaryAccountStr = InputUtilities.getInputAsString(varName,promptIsSalaryAccount);
+	    			  float minBalNonSalAccnt = 100;
+
+	    			  if (isSalaryAccountStr.equalsIgnoreCase("Y")) {  	        
+	    				  bankAccount = new SavingAccount(accntNum, bsbCode, accntName, accntBal, accntOpeningDate, true); 
+	    			  } else {    	            	
 	    	                if(accntBal < minBalNonSalAccnt) {
 	    	                	throw new InsufficientBalanceException("Minimum balance required is " + minBalNonSalAccnt + " dollars.");
 	    	                }
@@ -292,6 +319,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	    	        } 
 	    		  
 	    		  customer.setCustomerBankAccount(bankAccount);
+	    		  bankAccount.setBankAccountType(accntType);
 	    	      System.out.println("Bank account assigned to customer successfully");
 	    		  
 	    	}catch(InsufficientBalanceException e) {
@@ -360,7 +388,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	public List<CustomerModel> searchCustomersByName(String name) {
         List<CustomerModel> matchingCustomers = new ArrayList<>();
 
-        for (CustomerModel customer : customerMap.values()) {
+        for (CustomerModel customer : this.customers.values()) {
             if (customer.getCustName().equalsIgnoreCase(name)) {
                 matchingCustomers.add(customer);
             }
@@ -372,7 +400,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	@Override	
 	public CustomerModel getCustomerById(int customerId) {
 		try {
-			for (CustomerModel customer : customerMap.values()) {
+			for (CustomerModel customer : this.customers.values()) {
 		        if (customer != null && customer.getCustId() == customerId) {
 		            return customer;
 		        }
@@ -391,7 +419,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	@Override
 	public boolean allItemsAreNull(){
 		boolean isAllNull = true;
-		 for (CustomerModel element : this.customerMap.values()) {
+		 for (CustomerModel element : this.customers.values()) {
 		        if (element != null) {
 		        	isAllNull = false;
 		        	break;
@@ -403,7 +431,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	@Override
 	public void sortByName() {	
 		 // Create a list of customer values from the HashMap
-	    List<CustomerModel> customerList = new ArrayList<>(customerMap.values());
+	    List<CustomerModel> customerList = new ArrayList<>(this.customers.values());
 
 	    // Sort the customer list based on the customer name
 	    customerList.sort(Comparator.comparing(CustomerModel::getCustName));
@@ -415,7 +443,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	@Override
 	public void sortById() {	
 		 // Create a list of customer values from the HashMap
-	    List<CustomerModel> customerList = new ArrayList<>(customerMap.values());
+	    List<CustomerModel> customerList = new ArrayList<>(this.customers.values());
 
 	    // Sort the customer list based on the customer name
 	    customerList.sort(Comparator.comparing(CustomerModel::getCustId));
@@ -454,7 +482,7 @@ public class CustomerService implements ICustomerService, Serializable {
 		}
 
 	@Override
-	public void persistData(File filename) {
+	public void persistDataToFile(File filename) {
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
@@ -462,7 +490,7 @@ public class CustomerService implements ICustomerService, Serializable {
 			fos = new FileOutputStream(filename);
 			bos = new BufferedOutputStream(fos);
 			oos = new ObjectOutputStream(bos);
-			oos.writeObject(this.customerMap);
+			oos.writeObject(this.customers);
 			System.out.println("Customer data persisted to file successfully!");	
 		} catch (FileNotFoundException e) {
 			System.out.println("Error file not found: " + e.getMessage());
@@ -478,55 +506,27 @@ public class CustomerService implements ICustomerService, Serializable {
 		}
 	}
 
-
-		
-//	@Override
-//	public static CustomerModel[] readData(File filename) {
-//	    CustomerModel[] customers = null;
-//	    FileInputStream fis = null;
-//	    BufferedInputStream bis = null;
-//	    ObjectInputStream ois = null;
-//	    try {
-//	        fis = new FileInputStream(filename);
-//	        bis = new BufferedInputStream(fis);
-//	        ois = new ObjectInputStream(bis);
-//	        Object obj = ois.readObject();
-//	        if(obj instanceof CustomerModel[]) {
-//	        	customers = (CustomerModel[])obj;
-//	        }else {
-//	        	System.out.println("Obj is not an instance of Customer[]");
-//	        }
-//	        for(CustomerModel c:customers) {
-//	        	if(c!=null) {
-//	        		count++;
-//	        	}
-//	        }
-//	        CustomerModel.setLastCustId(100 + count);
-//	        System.out.println("Customer data read from file successfully!");
-//	    } catch (FileNotFoundException e) {
-//	        System.out.println("Error file not found: " + e.getMessage());
-//	    } catch (IOException e) {
-//	        System.out.println("No data to load");
-//	    } catch (ClassNotFoundException e) {
-//	    	System.out.println("Error - Class not found Exception" + e.getMessage());
-//		} finally {
-//	        try {
-//	            if (ois != null) {
-//	                ois.close();
-//	            }
-//	            if (bis != null) {
-//	                bis.close();
-//	            }
-//	            if (fis != null) {
-//	                fis.close();
-//	            }
-//	        } catch (IOException e) {
-//	            e.printStackTrace();
-//	        }
-//	    }
-//	    return customers;
-//	}
-
-
+	
+	//// DATABSE	
+	
+	@Override
+	public int retrieveLastCustomerIdFromDatabase() {
+		return dao.retrieveLastCustomerIdFromDatabase();
+	}
+	
+	@Override
+	public void updateAllCustomersToDatabase(Map<Integer, CustomerModel> customers) {
+		dao.updateAllCustomersToDatabase(customers);
+	}
+	
+	@Override
+	public Map<Integer, CustomerModel> retrieveAllCustomersFromDatabase(){
+		 return(dao.retrieveAllCustomersFromDatabase());
+	}
+	
+	@Override
+	public void updateLastCustomerIdToDatabase(int lastCustomerId){
+		dao.updateLastCustomerIdToDatabase(lastCustomerId);
+	}
 
 }

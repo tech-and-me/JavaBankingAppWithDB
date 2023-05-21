@@ -23,8 +23,13 @@ public interface ICustomerService {
 	 public void displayCustomers();
 	 public void displayCustomers(List<CustomerModel> customerList);
 	 public void displayInterstEarnedForCustomer(int customerId);
-	 public void persistData(File filename);
+	 public void persistDataToFile(File filename);
 //	 public static Customer[] readData(File filename);
 	void sortById();
+	int retrieveLastCustomerIdFromDatabase();
+	Map<Integer, CustomerModel> retrieveAllCustomersFromDatabase();
+	void updateAllCustomersToDatabase(Map<Integer, CustomerModel> customers);
+	void updateLastCustomerIdToDatabase(int lastCustomerId);
+	
 	
 }

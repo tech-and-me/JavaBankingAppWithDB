@@ -13,6 +13,7 @@ public abstract class BankAccount implements Serializable{
 	private String bankName;
 	private double accntBal;
 	private LocalDate accntOpeningDate;
+	private String bankAccountType;
 	
 	public BankAccount() {		
 	}
@@ -65,6 +66,14 @@ public abstract class BankAccount implements Serializable{
 		this.accntOpeningDate = accntOpeningDate;
 	}
 	
+	public String getBankAccountType() {
+		return bankAccountType;
+	}
+
+	public void setBankAccountType(String bankAccountType) {
+		this.bankAccountType = bankAccountType;
+	}
+
 	public abstract double withdraw(double amount);
 	
 	public abstract double deposit(double amount);

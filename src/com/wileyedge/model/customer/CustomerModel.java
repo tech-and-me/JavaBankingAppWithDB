@@ -14,11 +14,11 @@ public class CustomerModel implements Serializable {
 	private int custId;
 	private String custName;
 	private int custAge;
-	private String custMobNum;
+	private String custMobNum; // String cos i want the 0 at the start to not eliminated. 
 	private String custPassportNum;
 	private LocalDate dob;
-	private BankAccount bankAccount;
-	
+	private BankAccount bankAccount = null;
+
 	private static int lastCustId = 100;
 	
 	public CustomerModel() {
@@ -26,15 +26,25 @@ public class CustomerModel implements Serializable {
 	}
 
 	public CustomerModel(String custName, String custMobNum, String custPassportNum,LocalDate dob) {
-		super();
-		this.custId = lastCustId;
+		this.custId = lastCustId++;
 		this.custName = custName;	
 		this.custMobNum = custMobNum;
 		this.custPassportNum = custPassportNum;
 		this.dob = dob;
 		this.setCustAge();
 		
-		lastCustId++;
+//		lastCustId++;
+	}
+	
+	public CustomerModel(int custId, String custName, String custMobNum, String custPassportNum, LocalDate dob) {
+		this.custId = custId;
+		this.custName = custName;	
+		this.custMobNum = custMobNum;
+		this.custPassportNum = custPassportNum;
+		this.dob = dob;
+		this.setCustAge();
+		// we don't increase lastCustId here cos we use this constructor when retrieve data from database which already have id assigned. 
+		// lastCustId would be update with another method called retrievedLastCustId
 	}
 	
 	public int getCustId() {
@@ -105,30 +115,21 @@ public class CustomerModel implements Serializable {
         this.bankAccount = bankAccount;
     }
 
+	public void setCustAge(int custAge) {
+		this.custAge = custAge;
+	}
+
+	public void setBankAccount(BankAccount bankAccount) {
+		this.bankAccount = bankAccount;
+	}
+
 	@Override
 	public String toString() {
 		return "custId=" + custId + ", custName=" + custName + ", custAge=" + custAge + ", custMobNum="
 				+ custMobNum + " , bankAccount=" + bankAccount;
 				
 	}
-    
-//	@Override
-//	public String toString() {
-//		String bankName = "N/A";
-//		String accountNumber = "N/A";
-//		double bankBalance = 0.00;
-//		if(this.bankAccount != null) {
-//			bankName = this.bankAccount.getBankName();
-//			accountNumber = String.valueOf(this.bankAccount.getAccntNum());
-//			bankBalance = this.bankAccount.getAccntBal();
-//		}
-//		return "ID: " + this.custId + " | " + "NAME: " + this.custName + " | " 
-//				+ "AGE: " + this.custAge 	+ " | " + "MOBILE: " + this.custMobNum + " | " + "Bank Name: " + bankName + " | " 
-//		+ "Bank Account Number: " + accountNumber + " | " + "Bank Balance: " + bankBalance;
-//	}
-	
-	
-	
-	
+
+
 	
 }

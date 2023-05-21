@@ -18,24 +18,23 @@ import com.wileyedge.utilities.InputUtilities;
 
 public class Controller {
 	public static void main(String[] args) {
-		File customersDataFile = new File("C:\\C353\\CustomersDataFile.txt");
-		CustomerModel customer = new CustomerModel();
-		Map<Integer,CustomerModel> customerMap = new HashMap<>();
-		CustomerService customerService = new CustomerService(customerMap);
+		Map<Integer,CustomerModel> customers = new HashMap<>(); // for temporaryStorage
+		CustomerService customerService = new CustomerService(customers);
+		
+		// Retrieve all data from database
+		if(customerService.retrieveAllCustomersFromDatabase() != null) {
+			customers.putAll(customerService.retrieveAllCustomersFromDatabase());
+		}
+		
 		int customerId;
 		
-//		//Read customer data from the file
-//		CustomerModel[] customerData = CustomerList.readData(customersDataFile);
-//
-//		// If the customer data array is not null or empty, add it to the customers object
-//		if (customerData != null && customerData.length > 0) {
-//			customers = new CustomerList(customerData);
-//			minCapacity = customerData.length + initialCapacity;
-//		    customers.ensureCapacity(minCapacity);
-//		}else {
-//			customers = new CustomerList(initialCapacity);
-//		}
-        
+		// Retrieve the lastCustId value from the database and assign it to the lastCustId variable
+		int retrievedLastCustId = customerService.retrieveLastCustomerIdFromDatabase();
+		if(retrievedLastCustId > CustomerModel.getLastCustId()) {
+			CustomerModel.setLastCustId(retrievedLastCustId);
+		}
+		
+		// Display main menu
 
 		boolean readyToExit = false;
 		Scanner scanner = new Scanner(System.in);
@@ -47,7 +46,7 @@ public class Controller {
             System.out.println("2 - Assign a Bank Account to a Customer");
             System.out.println("3 - Display balance or interest earned of a Customer");
             System.out.println("4 - Sort Customer Data ordered by Name");
-            System.out.println("5 - Persist Customer Data");
+//            System.out.println("5 - Persist Customer Data");
             System.out.println("6 - Show All Customers ordered by ID");
             System.out.println("7 - Search Customers by Name");
             System.out.println("8 - Exit");
@@ -61,15 +60,11 @@ public class Controller {
             	customerService.createCustomer();
             	break;
             case "2":// Assign a Bank Account to a Customer
-            	System.out.println("Enter customer id you want to assign bank account : ");
-            	customerId = scanner.nextInt();
-            	scanner.nextLine();
+            	customerId = InputUtilities.getInputAsInteger("CustomerId", "Enter customer Id you want to assigg bank account : ");
             	customerService.assignBankAccountForCustomer(customerId);
             	break;
             case "3": // Display balance or interest earned of a customer
-            	System.out.println("Enter customer id you want to assign bank account : ");
-            	customerId = scanner.nextInt();
-            	scanner.nextLine();
+            	customerId = InputUtilities.getInputAsInteger("CustomerId", "Enter customer Id to assign bank account to : "); 
             	customerService.displayInterstEarnedForCustomer(customerId);
             	break;
             case "4": // Sort customer data 
@@ -82,7 +77,7 @@ public class Controller {
             	}
             	break;
             case "5": // Persist Customer Data to flat file 
-            	customerService.persistData(customersDataFile);
+//            	customerService.persistDataToFile(customersDataFile);
             	break;
             case "6": // Show all customers            
             	customerService.displayCustomers();
@@ -93,10 +88,10 @@ public class Controller {
             	List<CustomerModel> matchingCustomers = customerService.searchCustomersByName(searchName);
             	break;
             case "8": // Exit
-            	//Persist Customers Data to Database 	
-            	customerService.persistData(customersDataFile);
+            	//Persist Customers Data to Database 
+            	customerService.updateAllCustomersToDatabase(customers);
             	// Exit the program
-            	System.out.println("Good Bye!");
+            	System.out.println("Goodbye!");
             	scanner.close();
             	readyToExit = true;
             	break;
