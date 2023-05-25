@@ -67,13 +67,7 @@ public class CustomerService implements ICustomerService, Serializable {
 	 public boolean customerHasNoBankAccount(CustomerModel customer) {
 	    	return customer.getBankAccount() == null;
 	    }
-	
-	@Override
-	public void addCustomerToList(CustomerModel customer) {
-		this.customers.put(customer.getCustId(),customer);
-		System.out.println("Below customer details has been added to the customer list successfully.");
-		System.out.println(customer);
-	}
+
 	    
 	@Override   
 	public void createCustomer() {	
@@ -146,8 +140,8 @@ public class CustomerService implements ICustomerService, Serializable {
 			//Create customer object
 			CustomerModel customer = new CustomerModel(name,mobNum,passportNum,dob);
 		
-			//Add customer to list
-			addCustomerToList(customer);
+			//Add customer to DB via DAO
+			dao.addCustomerToDb(customer);
 		}
 	
 	@Override       
@@ -258,11 +252,13 @@ public class CustomerService implements ICustomerService, Serializable {
     public void assignBankAccountForCustomer(int customerId) {
 		CustomerModel customer = null;
     	try {
-    		customer = getCustomerById(customerId);
+    		customer = dao.retrieveCustomerById(customerId);
     		if(customer == null) {
     			throw new InvalidCustomerIdException("Customer not found");
-    		}else if (!customerHasNoBankAccount(customer)) {
+    		}else if (!this.customerHasNoBankAccount(customer)) {
     			throw new CustomerAlreadyHasBankAccountLinkedException("This customer already has a bank account linked.");
+    		}else {
+    			this.getGenericBankAccountInfo(customer);
     		}
     	}catch(InvalidCustomerIdException e) {
     		System.out.println(e.getMessage());
@@ -271,7 +267,7 @@ public class CustomerService implements ICustomerService, Serializable {
     		System.out.println(e.getMessage());
     		return;
     	}
-    	getGenericBankAccountInfo(customer);
+    	
     }
 	
 	
@@ -324,6 +320,8 @@ public class CustomerService implements ICustomerService, Serializable {
 	    		  
 	    		  customer.setCustomerBankAccount(bankAccount);
 	    		  bankAccount.setBankAccountType(accntType);
+	    		  dao.addBankAccountToDb(customer);
+	    		  
 	    	      System.out.println("Bank account assigned to customer successfully");
 	    		  
 	    	}catch(InsufficientBalanceException e) {
@@ -348,44 +346,44 @@ public class CustomerService implements ICustomerService, Serializable {
 	public void withdrawal() {
 		String varName = "Id";
 		String promptGetId = "Enter customer Id for bank account withdrawal : ";
-    	int min = 100;
-    	int max = 0;
-
     	int id = InputUtilities.getInputAsInteger(varName,promptGetId);
 
     	//Get customer object
     	CustomerModel customer = null;
     	try{
-    		customer = getCustomerById(id);
+    		customer = dao.retrieveCustomerById(id);
     		if(customer == null) {
     			throw new InvalidCustomerIdException("Invalid customer id. Bye!");
+    		}else {
+    			// Get amount to withdraw
+        		String promptGetAmount = "Enter Amount to withdraw : ";
+        		varName = "Amount";
+        		double minAmount = 5.00;
+        		double amount = 0;
+        		String tryAgain = "";
+    			boolean validInput = false;
+    			do{
+    				tryAgain = "";
+    				amount = InputUtilities.getInputAsDouble(varName,promptGetAmount);
+    				if(amount < minAmount){
+    					System.out.println("Withdrawal amount must be, at least, " + minAmount + "\nWould you like to try another amount ? Y/N : ");
+    					tryAgain = new Scanner(System.in).nextLine();
+    					if(!tryAgain.equalsIgnoreCase("Y")) {
+    						break;
+    					}
+    				}else{
+    					validInput = true;
+    				}
+    			}while(!validInput);
+
+        		//Check type of bank account (Fixed Deposit or Saving)
+        		BankAccount account = customer.getBankAccount(); // this will return fixed "F" or saving account "S"
+        		double updatedBankBal = account.withdraw(amount); // invoke method in fixed or saving account
+        		dao.updateBankBalanceInDb(account);
+
     		}
 
-    		// Get amount to withdraw
-    		String promptGetAmount = "Enter Amount to withdraw : ";
-    		varName = "Amount";
-    		double minAmount = 5.00;
-    		double amount = 0;
-    		String tryAgain = "";
-			boolean validInput = false;
-			do{
-				tryAgain = "";
-				amount = InputUtilities.getInputAsDouble(varName,promptGetAmount);
-				if(amount < minAmount){
-					System.out.println("Withdrawal amount must be, at least, " + minAmount + "\nWould you like to try another amount ? Y/N : ");
-					tryAgain = new Scanner(System.in).nextLine();
-					if(!tryAgain.equalsIgnoreCase("Y")) {
-						break;
-					}
-				}else{
-					validInput = true;
-				}
-			}while(!validInput);
-
-    		//Check type of bank account (Fixed Deposit or Saving)
-    		BankAccount account = customer.getBankAccount(); // this will return fixed "F" or saving account "S"
-    		double updatedBankBal = account.withdraw(amount); // invoke method in fixed or saving account
-
+    		
     	}catch(InvalidCustomerIdException e) {
     		System.out.println(e.getMessage());
     		return;
@@ -395,33 +393,24 @@ public class CustomerService implements ICustomerService, Serializable {
 	
 	@Override
 	public List<CustomerModel> searchCustomersByName(String name) {
-        List<CustomerModel> matchingCustomers = new ArrayList<>();
-
-        for (CustomerModel customer : this.customers.values()) {
-            if (customer.getCustName().equalsIgnoreCase(name)) {
-                matchingCustomers.add(customer);
-            }
+        List<CustomerModel> matchingCustomers = dao.retrieveCustomerByName(name);
+        if (matchingCustomers != null && !matchingCustomers.isEmpty()) {
+            this.displayCustomers(matchingCustomers);
+        } else {
+            System.out.println("No customers found with the given name.");
         }
-        this.displayCustomers(matchingCustomers);
         return matchingCustomers;
     }
 	
 	@Override	
 	public CustomerModel getCustomerById(int customerId) {
-		try {
-			for (CustomerModel customer : this.customers.values()) {
-		        if (customer != null && customer.getCustId() == customerId) {
-		            return customer;
-		        }
-			}
-			throw new InvalidCustomerIdException("Customer not found.");
-			
-		}catch(InvalidCustomerIdException e){
-			return null;
-		}catch(Exception e) {
-			System.out.println("Oooop! Something went wrong !");
-			return null;
-		}
+		CustomerModel matchingCustomer = dao.retrieveCustomerById(customerId);
+        if (matchingCustomer != null) {
+            this.displayCustomer(matchingCustomer);
+        } else {
+            System.out.println("No customers found with the given Id.");
+        }
+        return matchingCustomer;
 	     
 	}
 		
@@ -462,9 +451,9 @@ public class CustomerService implements ICustomerService, Serializable {
 	}
 		
 	@Override
-	public void displayCustomers() {
-		boolean allNull = allItemsAreNull();	 
-		 if(allNull) {
+	public void displayCustomerBySortedIds() {
+		customers = retrieveAllCustomersFromDatabase();
+		 if(customers == null) {
 			 System.out.println("No customer to display");
 		 }else {
 			 System.out.println("\n==========Customers List==========");
@@ -472,6 +461,27 @@ public class CustomerService implements ICustomerService, Serializable {
 		 }		 	 
 	}
 
+	@Override
+	public void displayCustomerBySorteNames() {
+		customers = retrieveAllCustomersFromDatabase();
+		 if(customers == null) {
+			 System.out.println("No customer to display");
+		 }else {
+			 System.out.println("\n==========Customers List==========");
+			 sortByName();
+		 }		 	 
+	}
+	
+	@Override
+	public void displayCustomer(CustomerModel customer) {
+		 if(customer == null) {
+			 System.out.println("No customer to display");
+		 }else {
+			 System.out.println(customer);
+		 }		 	 
+	}
+	
+	
 	@Override
 	public void displayCustomers(List<CustomerModel> customerList) {
     	for(CustomerModel cust: customerList) {
@@ -483,11 +493,19 @@ public class CustomerService implements ICustomerService, Serializable {
 		
 	@Override
 	public void displayInterstEarnedForCustomer(int customerId){
-			 CustomerModel customer = getCustomerById(customerId);
+			 CustomerModel customer = dao.retrieveCustomerById(customerId);
 			    if (customer == null) {
+			    	System.out.println("Customer not found.");
 			        return;
+			    }else if(customer.getBankAccount() == null) {
+			    	System.out.println("No bank account has been assigned to this customer yet.");
+			    	return;
+			    }else {
+			    	BankAccount bankAccount = customer.getBankAccount();
+			    	double interestEarned = bankAccount.calculateInterest();
+			    	System.out.println("Interest earned for bank account number : " + bankAccount.getAccntNum() + " is: " + interestEarned + " dollars.");
+			    	System.out.println("Updated bank balance for this account is : " + bankAccount.getAccntBal());
 			    }
-			    System.out.println("Interest earned for customer ID: " + customer.getCustId() + " is: " + customer.getBankAccount().calculateInterest() + " dollars.");
 		}
 
 	@Override
@@ -495,6 +513,9 @@ public class CustomerService implements ICustomerService, Serializable {
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
+		
+		this.customers = dao.retrieveAllCustomersFromDatabase();
+		
 		try {
 			fos = new FileOutputStream(filename);
 			bos = new BufferedOutputStream(fos);
@@ -531,6 +552,13 @@ public class CustomerService implements ICustomerService, Serializable {
 	@Override
 	public Map<Integer, CustomerModel> retrieveAllCustomersFromDatabase(){
 		 return(dao.retrieveAllCustomersFromDatabase());
+	}
+
+
+	@Override
+	public void addCustomerToList(CustomerModel customer) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 //	@Override

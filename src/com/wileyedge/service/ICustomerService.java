@@ -20,9 +20,11 @@ public interface ICustomerService {
 	 public CustomerModel getCustomerById(int customerId);
 	 public boolean allItemsAreNull();		
 	 public void sortByName();
-	 public void displayCustomers();
+	 public void displayCustomerBySortedIds();
+	 public void displayCustomerBySorteNames();
 	 public void displayCustomers(List<CustomerModel> customerList);
 	 public void displayInterstEarnedForCustomer(int customerId);
+	 void displayCustomer(CustomerModel customer);
 	 public void persistDataToFile(File filename);
 //	 public static Customer[] readData(File filename);
 	void sortById();
